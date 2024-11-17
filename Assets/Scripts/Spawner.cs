@@ -12,7 +12,6 @@ public class Spawner : MonoBehaviour
     private Pool<Cube> _pool;
     private float _delay;
     private Vector3 _position;
-    private Color _color;
     private WaitForSeconds _wait;
 
     private void Awake()
