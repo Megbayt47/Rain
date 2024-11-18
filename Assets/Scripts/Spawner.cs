@@ -10,7 +10,6 @@ public class Spawner : MonoBehaviour
     [SerializeField] private float _repiteRate = 1f;
 
     private Pool<Cube> _pool;
-    private float _delay;
     private Vector3 _position;
     private WaitForSeconds _wait;
 
@@ -33,32 +32,16 @@ public class Spawner : MonoBehaviour
 
             Cube cube = _pool.GetObject();
             cube.Initialize(_position);
-            cube.Touched += OnTouch;
+            cube.Deathed += OnDeath;
 
             yield return _wait;
         }
     }
 
-    private IEnumerator ReturnToPool(Cube cube)
+    private void OnDeath(Cube cube)
     {
-        _delay = GetRandomDelay();
-
-        yield return new WaitForSeconds(_delay);
-
         _pool.ReleaseObject(cube);
-    }
-
-    private void OnTouch(Cube cube)
-    {
-        StartCoroutine(ReturnToPool(cube));
-        cube.Touched -= OnTouch;
-    }
-
-    private float GetRandomDelay()
-    {
-        float minRandom = 2f, maxRandom = 5f;
-
-        return Random.Range(minRandom, maxRandom);
+        cube.Deathed -= OnDeath;
     }
 
     private Vector3 GetRandomPosition()
@@ -71,10 +54,10 @@ public class Spawner : MonoBehaviour
         float minRandomZ = _platform.transform.localScale.z / negativeDevider;
         float maxRandomZ = _platform.transform.localScale.z / devider;
 
-        float X = Random.Range(minRandomX, maxRandomX + 1);
-        float Y = _hightPoint;
-        float Z = Random.Range(minRandomZ, maxRandomZ + 1);
+        float positionX = Random.Range(minRandomX, maxRandomX);
+        float positionY = _hightPoint;
+        float positionZ = Random.Range(minRandomZ, maxRandomZ);
 
-        return new Vector3(X, Y, Z);
+        return new Vector3(positionX, positionY, positionZ);
     }
 }

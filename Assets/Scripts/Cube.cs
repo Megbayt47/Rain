@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Renderer))]
@@ -9,9 +10,11 @@ public class Cube : MonoBehaviour
 
     private Renderer _renderer;
     private Rigidbody _rigidbody;
+    private AudioSource _drop;
     private bool _isTouch;
+    private float _timeLife;
 
-    public event Action<Cube> Touched;
+    public event Action<Cube> Deathed;
 
     private void Awake()
     {
@@ -21,17 +24,17 @@ public class Cube : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        AudioSource drop = GetRandomSoundDrop();
+        _drop = GetRandomSoundDrop();
 
-        if (collision.collider.TryGetComponent(out Platform platform))
+        if (_isTouch == false)
         {
-            Touched?.Invoke(this);
-
-            if (_isTouch == false)
+            if (collision.collider.TryGetComponent(out Platform platform))
             {
-                drop.Play();
+                _drop.Play();
                 _renderer.material.color = UnityEngine.Random.ColorHSV();
                 _isTouch = true;
+
+                StartCoroutine(ReturnToPool());
             }
         }
     }
@@ -48,5 +51,21 @@ public class Cube : MonoBehaviour
     private AudioSource GetRandomSoundDrop()
     {
         return _soundsDrop[UnityEngine.Random.Range(0, _soundsDrop.Length)];
+    }
+
+    private IEnumerator ReturnToPool()
+    {
+        _timeLife = GetRandomDelay();
+
+        yield return new WaitForSeconds(_timeLife);
+
+        Deathed?.Invoke(this);
+    }
+
+    private float GetRandomDelay()
+    {
+        float minRandom = 2f, maxRandom = 5f;
+
+        return UnityEngine.Random.Range(minRandom, maxRandom);
     }
 }
